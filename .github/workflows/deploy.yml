@@ -10,39 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build Docker image
-      run: |
-        docker build -t mlops-fastapi .
+      - name: Build Docker image
+        run: |
+          docker build -t mlops-fastapi .
 
-    - name: Tag Docker image
-      run: |
-        docker tag mlops-fastapi:latest \
-        ${{ secrets.ECR_REGISTRY }}/mlops-fastapi:latest
+      - name: Tag Docker image
+        run: |
+          docker tag mlops-fastapi:latest \
+          ${{ secrets.ECR_REGISTRY }}/mlops-fastapi:latest
 
-    - name: Push Docker image to ECR
-      run: |
-        docker push ${{ secrets.ECR_REGISTRY }}/mlops-fastapi:latest
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.ECR_REGISTRY }}/mlops-fastapi:latest
 
-    - name: Update kubeconfig
-      run: |
-        aws eks update-kubeconfig \
-          --region ${{ secrets.AWS_REGION }} \
-          --name ${{ secrets.EKS_CLUSTER_NAME }}
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region ${{ secrets.AWS_REGION }} \
+            --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-    - name: Deploy to EKS
-      run: |
-        kubectl rollout restart deployment mlops-api -n mlops
-
+      - name: Deploy to EKS
+        run: |
+          kubectl rollout restart deployment mlops-api -n mlops
